@@ -10,7 +10,7 @@
 
 ## Techniques
 ### Terrain from Height Map
-Use perturbed FBM-Perlin noise to get a basic height map 
+Use perturbed FBM-Perlin noise to get the basic height map 
 and remap the map by using smoothstep to generate
 flat and smooth basins among steep mountains.
 
