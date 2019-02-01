@@ -28,8 +28,12 @@ class ShaderProgram {
   unifModel: WebGLUniformLocation;
   unifModelInvTr: WebGLUniformLocation;
   unifViewProj: WebGLUniformLocation;
-  unifColor: WebGLUniformLocation;
+  unifViewProjInv: WebGLUniformLocation;
   unifPlanePos: WebGLUniformLocation;
+  unifSharpness: WebGLUniformLocation;
+  unifSnowfall: WebGLUniformLocation;
+  unifDimension: WebGLUniformLocation;
+  unifTime: WebGLUniformLocation;
 
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
@@ -48,7 +52,13 @@ class ShaderProgram {
     this.unifModel      = gl.getUniformLocation(this.prog, "u_Model");
     this.unifModelInvTr = gl.getUniformLocation(this.prog, "u_ModelInvTr");
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
+    this.unifViewProjInv= gl.getUniformLocation(this.prog, "u_ViewProjInv");
     this.unifPlanePos   = gl.getUniformLocation(this.prog, "u_PlanePos");
+    this.unifSharpness  = gl.getUniformLocation(this.prog, "u_Sharpness");
+    this.unifSnowfall   = gl.getUniformLocation(this.prog, "u_Snowfall");
+    this.unifDimension  = gl.getUniformLocation(this.prog, "u_Dimension");
+    this.unifTime       = gl.getUniformLocation(this.prog, "u_Time");
+
   }
 
   use() {
@@ -77,12 +87,45 @@ class ShaderProgram {
     if (this.unifViewProj !== -1) {
       gl.uniformMatrix4fv(this.unifViewProj, false, vp);
     }
+    if (this.unifViewProjInv !== -1) {
+      let vpinv: mat4 = mat4.create();
+      mat4.invert(vpinv, vp);
+      gl.uniformMatrix4fv(this.unifViewProjInv, false, vpinv);
+    }
   }
 
   setPlanePos(pos: vec2) {
     this.use();
     if (this.unifPlanePos !== -1) {
       gl.uniform2fv(this.unifPlanePos, pos);
+    }
+  }
+
+  setSharpness(shape: number) {
+    this.use();
+    if (this.unifSharpness !== -1) {
+      gl.uniform1f(this.unifSharpness, shape);
+    }
+  }
+
+  setSnowfall(snow: number) {
+    this.use();
+    if (this.unifSnowfall !== -1) {
+      gl.uniform1f(this.unifSnowfall, snow);
+    }
+  }
+
+  setDimension(dim: vec2) {
+    this.use();
+    if (this.unifDimension !== -1) {
+      gl.uniform2fv(this.unifDimension, dim);
+    }
+  }
+
+  setTime(time: number) {
+    this.use();
+    if (this.unifTime !== -1) {
+      gl.uniform1i(this.unifTime, time);
     }
   }
 

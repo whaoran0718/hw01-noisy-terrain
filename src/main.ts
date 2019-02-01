@@ -11,8 +11,8 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
-  tesselations: 5,
-  'Load Scene': loadScene, // A function pointer, essentially
+  Sharpness: 0,
+  Snowfall: 1,
 };
 
 let square: Square;
@@ -82,6 +82,8 @@ function main() {
 
   // Add controls to the gui
   const gui = new DAT.GUI();
+  gui.add(controls, 'Sharpness', 0, 1).step(0.01);
+  gui.add(controls, 'Snowfall', 0, 1).step(0.01);
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -101,6 +103,8 @@ function main() {
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(164.0 / 255.0, 233.0 / 255.0, 1.0, 1);
   gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   const lambert = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/terrain-vert.glsl')),
@@ -132,6 +136,7 @@ function main() {
     planePos = newPos;
   }
 
+  let timer = 0;
   // This function will be called every frame
   function tick() {
     camera.update();
@@ -139,14 +144,18 @@ function main() {
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
     processKeyPresses();
-    renderer.render(camera, lambert, [
-      plane,
-    ]);
+    flat.setTime(timer);
     renderer.render(camera, flat, [
       square,
     ]);
+    lambert.setSharpness(controls.Sharpness);
+    lambert.setSnowfall(controls.Snowfall);
+    lambert.setTime(timer);
+    renderer.render(camera, lambert, [
+      plane,
+    ]);
     stats.end();
-
+    timer++;
     // Tell the browser to call `tick` again whenever it renders a new frame
     requestAnimationFrame(tick);
   }
@@ -155,11 +164,13 @@ function main() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     camera.setAspectRatio(window.innerWidth / window.innerHeight);
     camera.updateProjectionMatrix();
+    flat.setDimension(vec2.fromValues(window.innerWidth, window.innerHeight));
   }, false);
 
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.setAspectRatio(window.innerWidth / window.innerHeight);
   camera.updateProjectionMatrix();
+  flat.setDimension(vec2.fromValues(window.innerWidth, window.innerHeight));
 
   // Start the render loop
   tick();
